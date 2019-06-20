@@ -1,0 +1,36 @@
+{
+    "properties": {
+        "displayName": "Match multiple Resource Group name patterns",
+        "description": "Allow one of multiple naming patterns for Resource Group name.",
+        "mode": "All",
+        "metadata": {
+            "category": "General"
+        },
+        "parameters": {},
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Resources/subscriptions/resourceGroups"
+                    },
+                    {
+                        "not": {
+                            "field": "name",
+                            "match": "RG-???-###"
+                        }
+                    },
+                    {
+                        "not": {
+                            "field": "name",
+                            "match": "RG-????"
+                        }
+                    }
+                ]
+            },
+            "then": {
+                "effect": "deny"
+            }
+        }
+    }
+}

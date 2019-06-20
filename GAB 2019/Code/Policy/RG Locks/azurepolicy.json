@@ -1,0 +1,72 @@
+{
+    "properties": {
+        "displayName": "Automatically deploy locks on resource groups",
+        "description": "Automatically deploy a lock on the resource groups tagged as a production environment.",
+        "mode": "All",
+        "metadata": {
+            "category": "General"
+        },
+        "parameters": {
+            "tagName": {
+                "type": "String",
+                "metadata": {
+                    "description": "Name of the tag, such as environment"
+                }
+            },
+            "tagValue": {
+                "type": "String",
+                "metadata": {
+                    "description": "Value of the tag, such as PROD"
+                }
+            }
+        },
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Resources/subscriptions/resourceGroups"
+                    },
+                    {
+                        "field": "[concat('tags[',parameters('tagName'), ']')]",
+                        "equals": "[parameters('tagValue')]"
+                    }
+                ]
+            },
+            "then": {
+                "effect": "deployIfNotExists",
+                "details": {
+                    "type": "Microsoft.Authorization/locks",
+                    "existenceCondition": {
+                        "field": "Microsoft.Authorization/locks/level",
+                        "equals": "CanNotDelete"
+                    },
+                    "roleDefinitionIds": [
+                        "/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+                    ],
+                    "deployment": {
+                        "properties": {
+                            "mode": "incremental",
+                            "template": {
+                                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+                                "contentVersion": "1.0.0.0",
+                                "parameters": {},
+                                "resources": [
+                                    {
+                                        "type": "Microsoft.Authorization/locks",
+                                        "apiVersion": "2016-09-01",
+                                        "name": "ResourceLock",
+                                        "properties": {
+                                            "level": "CanNotDelete",
+                                            "notes": "Prevent accidental deletion of resource groups"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "FranceCentral"
+    },
+    "adminUsername": {
+      "value": "admcloud"
+    },
+    "dnsLabelPrefix": {
+      "value": "mydemovmygu002"
+    },
+    "windowsOrUbuntu": {
+      "value": "Windows"
+    },
+    "authenticationType": {
+      "value": "password"
+    },
+    "adminPasswordOrKey": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/<mysubscriptionid>/resourceGroups/DEMO/providers/Microsoft.KeyVault/vaults/demoygu001"
+        },
+        "secretName": "SimpleVM"
+      }
+    }
+  }
+}

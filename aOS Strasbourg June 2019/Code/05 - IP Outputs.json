@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "createdby": {
+      "type": "string",
+      "metadata": {
+        "description": "Who deployed the resource."
+      }
+    },
+    "ipCount": {
+      "type": "int",
+      "metadata": {
+        "description": "IP Count"
+      }
+    }
+  },
+  "variables": {},
+  "functions": [
+    {
+      "namespace": "aos",
+      "members": {
+        "formatName": {
+          "parameters": [
+            {
+              "name": "namePrefix",
+              "type": "int"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[concat('IP',padleft(parameters('namePrefix'),3,'0'))]"
+          }
+        }
+      }
+    }
+  ],
+  "resources": [
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2018-08-01",
+      "name": "[aos.formatName(parameters('ipCount'))]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "CreatedBy": "[parameters('createdBy')]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[tolower(aos.formatName(parameters('ipCount')))]"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "PublicIP": {
+      "type": "object",
+      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', aos.formatName(parameters('ipCount'))))]"
+    }
+  }
+}
