@@ -1,0 +1,57 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "createdby": {
+           "type": "string",
+           "metadata": {
+                "description": "Who deployed the resource."
+            }
+        },
+        "ipType": {
+            "type": "string",
+            "allowedValues": [
+                "Dynamic",
+                "Static"
+            ],
+            "metadata": {
+                 "description": "IP Type."
+             }
+         }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "condition": "[equals(parameters('ipType'), 'Dynamic')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2018-08-01",
+            "name": "IPDynamic",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "CreatedBy": "[parameters('createdBy')]",
+                "Description": "Demo",
+                "Role": "IP"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "condition": "[equals(parameters('ipType'), 'Static')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2018-08-01",
+            "name": "IPStatic",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "CreatedBy": "[parameters('createdBy')]",
+                "Description": "Demo",
+                "Role": "IP"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        }
+    ],
+    "outputs": {}
+}
