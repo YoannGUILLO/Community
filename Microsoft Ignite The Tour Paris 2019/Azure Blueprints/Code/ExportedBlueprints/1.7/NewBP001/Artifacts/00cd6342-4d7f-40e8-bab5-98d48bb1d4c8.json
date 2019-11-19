@@ -1,0 +1,159 @@
+{
+  "kind": "template",
+  "properties": {
+    "displayName": "KeyVault",
+    "description": "Deploy the Key Vault used to centralized all the secrets / keys in the subscription.",
+    "dependsOn": [],
+    "template": {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "codeBU": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 5
+        },
+        "resourcesLocation": {
+          "type": "string",
+          "allowedvalues": [
+            "West Europe",
+            "westeurope",
+            "France Central",
+            "francecentral"
+          ],
+          "metadata": {
+            "description": "Location for all resources."
+          }
+        },
+        "createdBy": {
+          "type": "string",
+          "metadata": {
+            "description": "Who deployed the resources."
+          }
+        },
+        "projectName": {
+          "type": "string",
+          "metadata": {
+            "description": "The name of the project."
+          }
+        },
+        "objectId": {
+          "type": "string",
+          "metadata": {
+            "description": "Object Id of the user to assigned to the Key Vault."
+          }
+        }
+      },
+      "variables": {
+        "keyvaultName": "[concat('AZ',parameters('codeBU'),'001KV001')]",
+        "keyvaultTenantId": "24139d14-c62c-4c47-8bdd-ce71ea1d50cf"
+      },
+      "resources": [
+        {
+          "apiVersion": "2018-02-14",
+          "name": "[variables('keyvaultName')]",
+          "type": "Microsoft.KeyVault/vaults",
+          "location": "[parameters('resourcesLocation')]",
+          "tags": {
+            "CreatedBy": "[parameters('createdBy')]",
+            "ProjectName": "[parameters('projectName')]"
+          },
+          "properties": {
+            "tenantId": "[variables('keyvaultTenantId')]",
+            "sku": {
+              "family": "A",
+              "name": "standard"
+            },
+            "accessPolicies": [
+              {
+                "tenantId": "[variables('keyvaultTenantId')]",
+                "objectId": "[parameters('objectId')]",
+                "permissions": {
+                  "keys": [
+                    "Get",
+                    "List",
+                    "Update",
+                    "Create",
+                    "Import",
+                    "Delete",
+                    "Recover",
+                    "Backup",
+                    "Restore",
+                    "Decrypt",
+                    "Encrypt",
+                    "UnwrapKey",
+                    "WrapKey",
+                    "Verify",
+                    "Sign",
+                    "Purge"
+                  ],
+                  "secrets": [
+                    "Get",
+                    "List",
+                    "Set",
+                    "Delete",
+                    "Recover",
+                    "Backup",
+                    "Restore",
+                    "Purge"
+                  ],
+                  "certificates": [
+                    "Get",
+                    "List",
+                    "Update",
+                    "Create",
+                    "Import",
+                    "Delete",
+                    "Recover",
+                    "Backup",
+                    "Restore",
+                    "ManageContacts",
+                    "ManageIssuers",
+                    "GetIssuers",
+                    "ListIssuers",
+                    "SetIssuers",
+                    "DeleteIssuers",
+                    "Purge"
+                  ]
+                }
+              }
+            ],
+            "enabledForDeployment": "true",
+            "enabledForDiskEncryption": "false",
+            "enabledForTemplateDeployment": "true",
+            "enableSoftDelete": "true"
+          },
+          "resources": []
+        }
+      ],
+      "outputs": {
+        "keyvault": {
+          "type": "object",
+          "value": "[reference(resourceId('Microsoft.KeyVault/vaults', variables('keyvaultName')))]"
+        },
+        "keyvaultId": {
+          "type": "string",
+          "value": "[resourceId('Microsoft.KeyVault/vaults', variables('keyvaultName'))]"
+        }
+      }
+    },
+    "resourceGroup": "ResourceGroup",
+    "parameters": {
+      "codeBU": {
+        "value": "[parameters('keyVault_codeBU')]"
+      },
+      "resourcesLocation": {
+        "value": "[parameters('keyVault_resourcesLocation')]"
+      },
+      "createdBy": {
+        "value": "[parameters('keyVault_createdBy')]"
+      },
+      "projectName": {
+        "value": "[parameters('keyVault_projectName')]"
+      },
+      "objectId": {
+        "value": "[parameters('keyVault_objectId')]"
+      }
+    }
+  }
+}

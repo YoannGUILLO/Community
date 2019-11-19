@@ -1,0 +1,11 @@
+{
+  "kind": "roleAssignment",
+  "properties": {
+    "displayName": "My USER (my.user@geneziis.com) : Reader",
+    "dependsOn": [],
+    "roleDefinitionId": "/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+    "principalIds": [
+      "c9ed8f62-fd69-42a2-ab48-8082ddaed2b8"
+    ]
+  }
+}

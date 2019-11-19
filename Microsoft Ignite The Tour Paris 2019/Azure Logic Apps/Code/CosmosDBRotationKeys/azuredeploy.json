@@ -1,0 +1,475 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logicAppName": {
+            "type": "string",
+            "metadata": {
+                "description": "Logic App Name."
+            }
+        },
+        "actionGroupsName": {
+            "type": "string",
+            "metadata": {
+                "description": "Action Groups Name."
+            }
+        },
+        "actionGroupsShortName": {
+            "type": "string",
+            "maxLength": 12,
+            "metadata": {
+                "description": "Action Groups Short Name."
+            }
+        },
+        "alertName": {
+            "type": "string",
+            "metadata": {
+                "description": "Alert Name."
+            }
+        },
+        "createdBy": {
+            "type": "string",
+            "metadata": {
+                "description": "Who deployed the resources."
+            }
+        },
+        "createdDate": {
+            "type": "string",
+            "metadata": {
+                "description": "When the resources has been deployed."
+            }
+        },
+        "keyVaultName": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the Key Vault name to use to reference the Keys."
+            }
+        }
+    },
+    "variables": {
+        "emailAddressNotification": "yoann.guillo@geneziis.com",
+        "countryCodeNotification": "33",
+        "phoneNumberNotification": "637922550"
+        },
+    "resources": [
+        {
+            "type": "microsoft.insights/actionGroups",
+            "name": "[parameters('actionGroupsName')]",
+            "apiVersion": "2018-03-01",
+            "location": "Global",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "groupShortName": "[parameters('actionGroupsShortName')]",
+                "enabled": true,
+                "emailReceivers": [
+                    {
+                        "name": "Notif_-EmailAction-",
+                        "emailAddress": "[variables('emailAddressNotification')]"
+                    }
+                ],
+                "smsReceivers": [
+                    {
+                        "name": "Notif_-SMSAction-",
+                        "countryCode": "[variables('countryCodeNotification')]",
+                        "phoneNumber": "[variables('phoneNumberNotification')]"
+                    }
+                ],
+                "webhookReceivers": [],
+                "itsmReceivers": [],
+                "azureAppPushReceivers": [
+                    {
+                        "name": "Notif_-AzureAppAction-",
+                        "emailAddress": "[variables('emailAddressNotification')]"
+                    }
+                ],
+                "automationRunbookReceivers": [],
+                "voiceReceivers": [],
+                "logicAppReceivers": [
+                    {
+                        "name": "LogicApp",
+                        "resourceId": "[resourceId('Microsoft.Logic/workflows', parameters('logicAppName'))]",
+                        "callbackUrl": "[listCallbackURL(concat(resourceId('Microsoft.Logic/workflows', parameters('logicAppName')), '/triggers/manual'), '2016-06-01').value]"
+                    }
+                ],
+                "azureFunctionReceivers": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Logic/workflows', parameters('logicAppName'))]"
+            ]
+        },
+        {
+            "type": "microsoft.insights/activityLogAlerts",
+            "name": "[parameters('alertName')]",
+            "apiVersion": "2017-04-01",
+            "location": "Global",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "scopes": [
+                    "[subscription().id]"
+                ],
+                "condition": {
+                    "allOf": [
+                        {
+                            "field": "category",
+                            "equals": "Administrative"
+                        },
+                        {
+                            "field": "resourceType",
+                            "equals": "microsoft.documentdb/databaseaccounts"
+                        },
+                        {
+                            "field": "operationName",
+                            "equals": "Microsoft.DocumentDB/databaseAccounts/regenerateKey/action"
+                        },
+                        {
+                            "field": "level",
+                            "equals": "informational"
+                        },
+                        {
+                            "field": "status",
+                            "equals": "succeeded"
+                        }
+                    ]
+                },
+                "actions": {
+                    "actionGroups": [
+                        {
+                            "actionGroupId": "[resourceId('microsoft.insights/actionGroups', parameters('actionGroupsName'))]",
+                            "webhookProperties": {}
+                        }
+                    ]
+                },
+                "enabled": true,
+                "description": "Key rotate"
+            },
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', parameters('actionGroupsName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Logic/workflows",
+            "name": "[parameters('logicAppName')]",
+            "apiVersion": "2017-07-01",
+            "location": "[resourceGroup().location]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "tags": {
+                "CreatedBy": "[parameters('createdBy')]",
+                "CreatedDate": "[parameters('createdDate')]"
+            },
+            "scale": null,
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "context": {
+                                                    "properties": {
+                                                        "activityLog": {
+                                                            "properties": {
+                                                                "authorization": {
+                                                                    "properties": {
+                                                                        "action": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "scope": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                },
+                                                                "caller": {
+                                                                    "type": "string"
+                                                                },
+                                                                "channels": {
+                                                                    "type": "string"
+                                                                },
+                                                                "claims": {
+                                                                    "type": "string"
+                                                                },
+                                                                "correlationId": {
+                                                                    "type": "string"
+                                                                },
+                                                                "description": {
+                                                                    "type": "string"
+                                                                },
+                                                                "eventDataId": {
+                                                                    "type": "string"
+                                                                },
+                                                                "eventSource": {
+                                                                    "type": "string"
+                                                                },
+                                                                "eventTimestamp": {
+                                                                    "type": "string"
+                                                                },
+                                                                "level": {
+                                                                    "type": "string"
+                                                                },
+                                                                "operationId": {
+                                                                    "type": "string"
+                                                                },
+                                                                "operationName": {
+                                                                    "type": "string"
+                                                                },
+                                                                "resourceGroupName": {
+                                                                    "type": "string"
+                                                                },
+                                                                "resourceId": {
+                                                                    "type": "string"
+                                                                },
+                                                                "resourceProviderName": {
+                                                                    "type": "string"
+                                                                },
+                                                                "resourceType": {
+                                                                    "type": "string"
+                                                                },
+                                                                "status": {
+                                                                    "type": "string"
+                                                                },
+                                                                "subStatus": {
+                                                                    "type": "string"
+                                                                },
+                                                                "submissionTimestamp": {
+                                                                    "type": "string"
+                                                                },
+                                                                "subscriptionId": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "properties": {
+                                                    "properties": {},
+                                                    "type": "object"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "schemaId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "actions": {
+                        "HTTP": {
+                            "runAfter": {
+                                "KeyVaultName": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Http",
+                            "inputs": {
+                                "authentication": {
+                                    "type": "ManagedServiceIdentity"
+                                },
+                                "method": "POST",
+                                "queries": {
+                                    "api-version": "2015-04-08"
+                                },
+                                "uri": "https://management.azure.com/subscriptions/@{triggerBody()?['data']?['context']?['activityLog']?['subscriptionId']}/resourceGroups/@{triggerBody()?['data']?['context']?['activityLog']?['resourceGroupName']}/providers/Microsoft.DocumentDB/databaseAccounts/@{variables('ResourceName')}/listKeys?api-version=2015-04-08"
+                            }
+                        },
+                        "KeyVaultName": {
+                            "runAfter": {
+                                "ResourceName": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "KeyVaultName",
+                                        "type": "String",
+                                        "value": "[parameters('keyVaultName')]"
+                                    }
+                                ]
+                            }
+                        },
+                        "Parse_JSON": {
+                            "runAfter": {
+                                "HTTP": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ParseJson",
+                            "inputs": {
+                                "content": "@body('HTTP')",
+                                "schema": {
+                                    "properties": {
+                                        "primaryMasterKey": {
+                                            "type": "string"
+                                        },
+                                        "primaryReadonlyMasterKey": {
+                                            "type": "string"
+                                        },
+                                        "secondaryMasterKey": {
+                                            "type": "string"
+                                        },
+                                        "secondaryReadonlyMasterKey": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "PrimaryMaster": {
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Http",
+                            "inputs": {
+                                "authentication": {
+                                    "audience": "https://vault.azure.net",
+                                    "type": "ManagedServiceIdentity"
+                                },
+                                "body": {
+                                    "contentType": "ACCESSS_KEY",
+                                    "tags": {
+                                        "updatedBy": "@{triggerBody()?['data']?['context']?['activityLog']?['caller']}"
+                                    },
+                                    "value": "@{body('Parse_JSON')?['primaryMasterKey']}"
+                                },
+                                "method": "PUT",
+                                "queries": {
+                                    "api-version": "7.0"
+                                },
+                                "uri": "https://@{variables('KeyVaultName')}.vault.azure.net/secrets/@{variables('ResourceName')}-primaryMasterKey"
+                            }
+                        },
+                        "PrimaryReadOnlyMaster": {
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Http",
+                            "inputs": {
+                                "authentication": {
+                                    "audience": "https://vault.azure.net",
+                                    "type": "ManagedServiceIdentity"
+                                },
+                                "body": {
+                                    "contentType": "ACCESSS_KEY",
+                                    "tags": {
+                                        "updatedBy": "@{triggerBody()?['data']?['context']?['activityLog']?['caller']}"
+                                    },
+                                    "value": "@{body('Parse_JSON')?['primaryReadonlyMasterKey']}"
+                                },
+                                "method": "PUT",
+                                "queries": {
+                                    "api-version": "7.0"
+                                },
+                                "uri": "https://@{variables('KeyVaultName')}.vault.azure.net/secrets/@{variables('ResourceName')}-primaryReadOnlyMasterKey"
+                            }
+                        },
+                        "ResourceName": {
+                            "runAfter": {},
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "ResourceName",
+                                        "type": "String",
+                                        "value": "@{split(triggerBody()?['data']?['context']?['activityLog']?['resourceId'],'/')[8]}"
+                                    }
+                                ]
+                            }
+                        },
+                        "SecondaryMaster": {
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Http",
+                            "inputs": {
+                                "authentication": {
+                                    "audience": "https://vault.azure.net",
+                                    "type": "ManagedServiceIdentity"
+                                },
+                                "body": {
+                                    "contentType": "ACCESSS_KEY",
+                                    "tags": {
+                                        "updatedBy": "@{triggerBody()?['data']?['context']?['activityLog']?['caller']}"
+                                    },
+                                    "value": "@{body('Parse_JSON')?['secondaryMasterKey']}"
+                                },
+                                "method": "PUT",
+                                "queries": {
+                                    "api-version": "7.0"
+                                },
+                                "uri": "https://@{variables('KeyVaultName')}.vault.azure.net/secrets/@{variables('ResourceName')}-secondaryMasterKey"
+                            }
+                        },
+                        "SecondaryReadOnlyMaster": {
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Http",
+                            "inputs": {
+                                "authentication": {
+                                    "audience": "https://vault.azure.net",
+                                    "type": "ManagedServiceIdentity"
+                                },
+                                "body": {
+                                    "contentType": "ACCESSS_KEY",
+                                    "tags": {
+                                        "updatedBy": "@{triggerBody()?['data']?['context']?['activityLog']?['caller']}"
+                                    },
+                                    "value": "@{body('Parse_JSON')?['secondaryReadonlyMasterKey']}"
+                                },
+                                "method": "PUT",
+                                "queries": {
+                                    "api-version": "7.0"
+                                },
+                                "uri": "https://@{variables('KeyVaultName')}.vault.azure.net/secrets/@{variables('ResourceName')}-secondaryReadOnlyMasterKey"
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {}
+            },
+            "dependsOn": []
+        }
+    ],
+    "outputs": {
+        "systemassignedId": {
+            "type": "string",
+            "value": "[reference(parameters('logicAppName'), '2016-06-01', 'Full').identity.principalId]"
+        },
+        "logicappCallBackUrl": {
+            "type": "string",
+            "value": "[listCallbackUrl(resourceId('Microsoft.Logic/workflows/triggers', parameters('logicAppName'), 'manual'), '2016-06-01').value]"
+        }
+    }
+}

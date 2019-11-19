@@ -1,0 +1,50 @@
+{
+  "kind": "template",
+  "properties": {
+    "displayName": "Custom Role VM operator",
+    "description": "Lets you Start, Stop and Restart the Virtual Machines.",
+    "dependsOn": [],
+    "template": {
+      "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {},
+      "variables": {
+        "subscriptionName": "[subscription().displayName]"
+      },
+      "resources": [
+        {
+          "type": "Microsoft.Authorization/roleDefinitions",
+          "apiVersion": "2017-09-01",
+          "name": "[guid(deployment().name)]",
+          "properties": {
+            "roleName": "[concat('Virtual Machine Operator-', variables('subscriptionName'))]",
+            "IsCustom": true,
+            "Description": "Lets you Start, Stop and Restart the Virtual Machines.",
+            "permissions": [
+              {
+                "Actions": [
+                  "Microsoft.Compute/*/read",
+                  "Microsoft.Compute/virtualMachines/start/action",
+                  "Microsoft.Compute/virtualMachines/restart/action",
+                  "Microsoft.Compute/virtualMachines/powerOff/action",
+                  "Microsoft.Compute/virtualMachines/deallocate/action"
+                ],
+                "NotActions": []
+              }
+            ],
+            "AssignableScopes": [
+              "[subscription().id]"
+            ]
+          }
+        }
+      ],
+      "outputs": {
+        "assignableScope": {
+          "type": "string",
+          "value": "[subscription().id]"
+        }
+      }
+    },
+    "parameters": {}
+  }
+}

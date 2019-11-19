@@ -1,0 +1,104 @@
+{
+  "kind": "template",
+  "properties": {
+    "displayName": "Log Analytics",
+    "description": "",
+    "dependsOn": [],
+    "template": {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "codeBU": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 5
+        },
+        "data-retention": {
+          "type": "int",
+          "defaultValue": 365,
+          "minValue": 0,
+          "maxValue": 365,
+          "metadata": {
+            "displayName": "Log retention in days",
+            "description": "Number of days data will be retained for"
+          }
+        },
+        "location": {
+          "type": "string",
+          "metadata": {
+            "displayName": "Location",
+            "description": "Region used when establishing the workspace"
+          },
+          "allowedValues": [
+            "West Europe",
+            "westeurope",
+            "France Central",
+            "francecentral"
+          ]
+        }
+      },
+      "variables": {
+        "diagnostic-storageAccount-name": "[toLower(concat('AZ', parameters('codeBU'),'000stor001'))]",
+        "oms-workspace-name": "[concat('AZ', parameters('codeBU'),'000LAW001')]"
+      },
+      "resources": [
+        {
+          "comments": "----DIAGNOSTICS STORAGE ACCOUNT-----",
+          "type": "Microsoft.Storage/storageAccounts",
+          "name": "[variables('diagnostic-storageAccount-name')]",
+          "apiVersion": "2018-07-01",
+          "location": "[resourceGroup().location]",
+          "kind": "StorageV2",
+          "sku": {
+            "name": "Standard_LRS"
+          },
+          "tags": {
+            "displayName": "Storage Account"
+          },
+          "properties": {
+            "encryption": {
+              "keySource": "Microsoft.Storage",
+              "services": {
+                "blob": {
+                  "enabled": true
+                },
+                "file": {
+                  "enabled": true
+                }
+              }
+            },
+            "supportsHttpsTrafficOnly": true
+          }
+        },
+        {
+          "type": "Microsoft.OperationalInsights/workspaces",
+          "name": "[variables('oms-workspace-name')]",
+          "apiVersion": "2017-03-15-preview",
+          "location": "[parameters('location')]",
+          "tags": {
+            "displayName": "Log Analytics"
+          },
+          "properties": {
+            "sku": {
+              "Name": "pergb2018"
+            },
+            "retention": "[parameters('data-retention')]"
+          }
+        }
+      ],
+      "outputs": {}
+    },
+    "resourceGroup": "ResourceGroup",
+    "parameters": {
+      "codeBU": {
+        "value": "[parameters('logAnalytics_codeBU')]"
+      },
+      "data-retention": {
+        "value": "[parameters('logAnalytics_data-retention')]"
+      },
+      "location": {
+        "value": "[parameters('logAnalytics_location')]"
+      }
+    }
+  }
+}

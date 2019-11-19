@@ -1,0 +1,364 @@
+{
+  "kind": "template",
+  "properties": {
+    "displayName": "Network",
+    "description": "Deploy all the network ressources.\n- Vnet\n-- Subnet Customer\n-- Subnet App Gateway\n- Vnet Peering\n- NSGs",
+    "dependsOn": [],
+    "template": {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "codeBU": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 5
+        },
+        "customerSubnetPrefix": {
+          "type": "string",
+          "metadata": {
+            "description": "Customer Subnet Prefix 0.0.0.0/0"
+          }
+        },
+        "appgatewaySubnetPrefix": {
+          "type": "string",
+          "metadata": {
+            "description": "Application Gateway Subnet Prefix 0.0.0.0/0"
+          }
+        },
+        "resourcesLocation": {
+          "type": "string",
+          "allowedvalues": [
+            "West Europe",
+            "westeurope",
+            "France Central",
+            "francecentral"
+          ],
+          "metadata": {
+            "description": "Location for all resources."
+          }
+        },
+        "createdBy": {
+          "type": "string",
+          "metadata": {
+            "description": "Who deployed the resources."
+          }
+        },
+        "projectName": {
+          "type": "string",
+          "metadata": {
+            "description": "The name of the project."
+          }
+        }
+      },
+      "variables": {
+        "virtualNetworkName": "[concat('AZ',parameters('codeBU'),'000VNET001')]",
+        "customerSubnetName": "[concat(variables('virtualNetworkName'),'-SUB001')]",
+        "appgatewaySubnetName": "[concat(variables('virtualNetworkName'),'-SUB999')]",
+        "customerNSGName": "[concat(variables('customerSubnetName'),'-NSG001')]",
+        "appgatewayNSGName": "[concat(variables('appgatewaySubnetName'),'-NSG001')]",
+        "vNetPeeringName": "[concat('AZ',parameters('codeBU'),'000PER001')]",
+        "resourceIdVnetWestEurope": "/subscriptions/4f33d452-a160-4530-8ad1-b5a6a3419ebe/resourceGroups/AZMITT001RG001/providers/Microsoft.Network/virtualNetworks/AZMITT001VNET001",
+        "resourceGroupNameVnetWestEurope": "AZMITT001RG001",
+        "subscriptionIdVnetWestEurope": "4f33d452-a160-4530-8ad1-b5a6a3419ebe",
+        "vNetNameFoundationWestEurope": "AZMITT001VNET001",
+        "vNetPeeringNameFoundationWestEurope": "[concat(variables('vNetNameFoundationWestEurope'), '/', variables('vNetPeeringName'))]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2018-08-01",
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[variables('customerNSGName')]",
+          "location": "[parameters('resourcesLocation')]",
+          "tags": {
+            "CreatedBy": "[parameters('createdBy')]",
+            "ProjectName": "[parameters('projectName')]"
+          },
+          "properties": {
+            "securityRules": [
+              {
+                "name": "Allow_Azure_LoadBalancer",
+                "properties": {
+                  "description": "Allow Azure Load Balancer to communicate with the ressources inside the subnet (replace the default rule 65001)",
+                  "protocol": "*",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "*",
+                  "sourceAddressPrefix": "AzureLoadBalancer",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 100,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "Allow_RDP_In",
+                "properties": {
+                  "description": "Allow the RDP connections.",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "3389",
+                  "sourceAddressPrefix": "192.168.0.0/24",
+                  "destinationAddressPrefix": "[parameters('customerSubnetPrefix')]",
+                  "access": "Allow",
+                  "priority": 105,
+                  "direction": "Inbound"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "apiVersion": "2018-08-01",
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[variables('appgatewayNSGName')]",
+          "location": "[parameters('resourcesLocation')]",
+          "tags": {
+            "CreatedBy": "[parameters('createdBy')]",
+            "ProjectName": "[parameters('projectName')]"
+          },
+          "properties": {
+            "securityRules": [
+              {
+                "name": "Allow_Azure_LoadBalancer",
+                "properties": {
+                  "description": "Allow Azure Load Balancer to communicate with the ressources inside the subnet (replace the default rule 65001)",
+                  "protocol": "*",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "*",
+                  "sourceAddressPrefix": "AzureLoadBalancer",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 100,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "Application_Gateway",
+                "properties": {
+                  "description": "Allow Application Gateway to communicate with Azure",
+                  "protocol": "*",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "65200-65535",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "VirtualNetwork",
+                  "access": "Allow",
+                  "priority": 110,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "Allow_Web_In",
+                "properties": {
+                  "description": "Allow traffic from the Application Gateway to Backends Pools",
+                  "protocol": "*",
+                  "sourcePortRange": "*",
+                  "destinationPortRanges": [
+                    "80",
+                    "443"
+                  ],
+                  "sourceAddressPrefix": "Internet",
+                  "destinationAddressPrefix": "VirtualNetwork",
+                  "access": "Allow",
+                  "priority": 120,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "Deny_All_In",
+                "properties": {
+                  "description": "Deny all the traffic Inbound",
+                  "protocol": "*",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "*",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "*",
+                  "access": "Deny",
+                  "priority": 4096,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "Allow_Web_Out",
+                "properties": {
+                  "description": "Allow traffic from the Application Gateway to Backends Pools",
+                  "protocol": "*",
+                  "sourcePortRange": "*",
+                  "destinationPortRanges": [
+                    "80",
+                    "443"
+                  ],
+                  "sourceAddressPrefix": "VirtualNetwork",
+                  "destinationAddressPrefix": "VirtualNetwork",
+                  "access": "Allow",
+                  "priority": 100,
+                  "direction": "Outbound"
+                }
+              },
+              {
+                "name": "Deny_All_Out",
+                "properties": {
+                  "description": "Deny all the traffic Outbound",
+                  "protocol": "*",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "*",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "*",
+                  "access": "Deny",
+                  "priority": 4096,
+                  "direction": "Outbound"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "apiVersion": "2018-08-01",
+          "type": "Microsoft.Network/virtualNetworks",
+          "name": "[variables('virtualNetworkName')]",
+          "location": "[parameters('resourcesLocation')]",
+          "tags": {
+            "CreatedBy": "[parameters('createdBy')]",
+            "ProjectName": "[parameters('projectName')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.Network/networkSecurityGroups/', variables('customerNSGName'))]",
+            "[concat('Microsoft.Network/networkSecurityGroups/', variables('appgatewayNSGName'))]"
+          ],
+          "properties": {
+            "addressSpace": {
+              "addressPrefixes": [
+                "[parameters('customerSubnetPrefix')]",
+                "[parameters('appgatewaySubnetPrefix')]"
+              ]
+            },
+            "subnets": [
+              {
+                "name": "[variables('customerSubnetName')]",
+                "properties": {
+                  "addressPrefix": "[parameters('customerSubnetPrefix')]",
+                  "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('customerNSGName'))]"
+                  }
+                }
+              },
+              {
+                "name": "[variables('appgatewaySubnetName')]",
+                "properties": {
+                  "addressPrefix": "[parameters('appgatewaySubnetPrefix')]",
+                  "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('appgatewayNSGName'))]"
+                  }
+                }
+              }
+            ]
+          },
+          "resources": [
+            {
+              "apiVersion": "2018-08-01",
+              "type": "virtualNetworkPeerings",
+              "name": "[variables('vNetPeeringName')]",
+              "location": "[resourceGroup().location]",
+              "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+              ],
+              "comments": "This is the peering from vNet customer to vNet foundation",
+              "properties": {
+                "allowVirtualNetworkAccess": "true",
+                "allowForwardedTraffic": "false",
+                "allowGatewayTransit": "false",
+                "useRemoteGateways": "false",
+                "remoteVirtualNetwork": {
+                  "id": "[variables('resourceIdVnetWestEurope')]"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "apiVersion": "2017-05-10",
+          "name": "westEuropeFoundationvNetPeering",
+          "type": "Microsoft.Resources/deployments",
+          "resourceGroup": "[variables('resourceGroupNameVnetWestEurope')]",
+          "subscriptionId": "[variables('subscriptionIdVnetWestEurope')]",
+          "dependsOn": [
+            "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+          ],
+          "properties": {
+            "mode": "Incremental",
+            "template": {
+              "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+              "contentVersion": "1.0.0.0",
+              "parameters": {},
+              "variables": {},
+              "resources": [
+                {
+                  "apiVersion": "2018-08-01",
+                  "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                  "name": "[variables('vNetPeeringNameFoundationWestEurope')]",
+                  "location": "[resourceGroup().location]",
+                  "comments": "This is the peering from vNet foundation to vNet customer",
+                  "properties": {
+                    "allowVirtualNetworkAccess": "true",
+                    "allowForwardedTraffic": "false",
+                    "allowGatewayTransit": "true",
+                    "useRemoteGateways": "false",
+                    "remoteVirtualNetwork": {
+                      "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+                    }
+                  }
+                }
+              ]
+            },
+            "parameters": {}
+          }
+        }
+      ],
+      "outputs": {
+        "customerNSG": {
+          "type": "object",
+          "value": "[reference(resourceId('Microsoft.Network/networkSecurityGroups', variables('customerNSGName')))]"
+        },
+        "customerNSGId": {
+          "type": "string",
+          "value": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('customerNSGName'))]"
+        },
+        "appgatewayNSG": {
+          "type": "object",
+          "value": "[reference(resourceId('Microsoft.Network/networkSecurityGroups', variables('appgatewayNSGName')))]"
+        },
+        "appgatewayNSGId": {
+          "type": "string",
+          "value": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('appgatewayNSGName'))]"
+        },
+        "virtualNetwork": {
+          "type": "object",
+          "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName')))]"
+        },
+        "virtualNetworkId": {
+          "type": "string",
+          "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        }
+      }
+    },
+    "resourceGroup": "ResourceGroup",
+    "parameters": {
+      "codeBU": {
+        "value": "[parameters('network_codeBU')]"
+      },
+      "customerSubnetPrefix": {
+        "value": "[parameters('network_customerSubnetPrefix')]"
+      },
+      "appgatewaySubnetPrefix": {
+        "value": "[parameters('network_appgatewaySubnetPrefix')]"
+      },
+      "resourcesLocation": {
+        "value": "[parameters('network_resourcesLocation')]"
+      },
+      "createdBy": {
+        "value": "[parameters('network_createdBy')]"
+      },
+      "projectName": {
+        "value": "[parameters('network_projectName')]"
+      }
+    }
+  }
+}

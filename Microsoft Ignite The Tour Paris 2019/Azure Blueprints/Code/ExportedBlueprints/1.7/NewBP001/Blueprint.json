@@ -1,0 +1,133 @@
+{
+  "properties": {
+    "description": "Deploy a Hub & Spoke environment for new BU.",
+    "targetScope": "subscription",
+    "parameters": {
+      "network_codeBU": {
+        "type": "string",
+        "metadata": {
+          "displayName": "codeBU (Network)"
+        },
+        "allowedValues": []
+      },
+      "network_customerSubnetPrefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "customerSubnetPrefix (Network)",
+          "description": "Customer Subnet Prefix 0.0.0.0/0"
+        },
+        "allowedValues": []
+      },
+      "network_appgatewaySubnetPrefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "appgatewaySubnetPrefix (Network)",
+          "description": "Application Gateway Subnet Prefix 0.0.0.0/0"
+        },
+        "allowedValues": []
+      },
+      "network_resourcesLocation": {
+        "type": "string",
+        "metadata": {
+          "displayName": "resourcesLocation (Network)",
+          "description": "Location for all resources."
+        },
+        "allowedValues": []
+      },
+      "network_createdBy": {
+        "type": "string",
+        "metadata": {
+          "displayName": "createdBy (Network)",
+          "description": "Who deployed the resources."
+        },
+        "allowedValues": []
+      },
+      "network_projectName": {
+        "type": "string",
+        "metadata": {
+          "displayName": "projectName (Network)",
+          "description": "The name of the project."
+        },
+        "allowedValues": []
+      },
+      "keyVault_codeBU": {
+        "type": "string",
+        "metadata": {
+          "displayName": "codeBU (KeyVault)"
+        },
+        "allowedValues": []
+      },
+      "keyVault_resourcesLocation": {
+        "type": "string",
+        "metadata": {
+          "displayName": "resourcesLocation (KeyVault)",
+          "description": "Location for all resources."
+        },
+        "allowedValues": []
+      },
+      "keyVault_createdBy": {
+        "type": "string",
+        "metadata": {
+          "displayName": "createdBy (KeyVault)",
+          "description": "Who deployed the resources."
+        },
+        "allowedValues": []
+      },
+      "keyVault_projectName": {
+        "type": "string",
+        "metadata": {
+          "displayName": "projectName (KeyVault)",
+          "description": "The name of the project."
+        },
+        "allowedValues": []
+      },
+      "keyVault_objectId": {
+        "type": "string",
+        "metadata": {
+          "displayName": "objectId (KeyVault)",
+          "description": "Object Id of the user to assigned to the Key Vault."
+        },
+        "allowedValues": []
+      },
+      "logAnalytics_codeBU": {
+        "type": "string",
+        "metadata": {
+          "displayName": "codeBU (Log Analytics)"
+        },
+        "allowedValues": []
+      },
+      "logAnalytics_data-retention": {
+        "type": "int",
+        "metadata": {
+          "displayName": "data-retention (Log Analytics)",
+          "description": "Number of days data will be retained for"
+        },
+        "defaultValue": 365,
+        "allowedValues": []
+      },
+      "logAnalytics_location": {
+        "type": "string",
+        "metadata": {
+          "displayName": "location (Log Analytics)",
+          "description": "Region used when establishing the workspace"
+        },
+        "allowedValues": [
+          "West Europe",
+          "westeurope",
+          "France Central",
+          "francecentral"
+        ]
+      }
+    },
+    "resourceGroups": {
+      "ResourceGroup": {
+        "name": "AZMITT000RG000",
+        "location": "westeurope",
+        "metadata": {
+          "displayName": "Foundation RG"
+        },
+        "dependsOn": []
+      }
+    }
+  }
+}

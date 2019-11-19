@@ -1,0 +1,96 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "assignmentName": {
+            "type": "string",
+            "defaultValue": "[concat('DEMO-', utcNow())]"
+        },
+        "definitionLocationMG": {
+            "type": "string",
+            "defaultValue": "ALL"
+        },
+        "blueprintName": {
+            "type": "string",
+            "defaultValue": "NewBP001"
+        },
+        "blueprintVersion": {
+            "type": "string",
+            "defaultValue": "1.7"
+        },
+        "createdBy": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "blueprintId": "[concat('/providers/Microsoft.Management/managementGroups/', parameters('definitionLocationMG'), '/providers/Microsoft.Blueprint/blueprints/', parameters('blueprintName'),'/versions/', parameters('blueprintVersion'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Blueprint/blueprintAssignments",
+            "apiVersion": "2017-11-11-preview",
+            "name": "[parameters('assignmentName')]",
+            "identity": {
+                "type": "userAssigned",
+                "tenantId": "2c4b7ade-dcc1-4f28-b9db-1ddb17f14ec5",
+                "userAssignedIdentities": {
+                    "/subscriptions/4f33d452-a160-4530-8ad1-b5a6a3419ebe/resourceGroups/AZMITT001RG001/providers/Microsoft.ManagedIdentity/userAssignedIdentities/AZMITT001MSI001": {
+                    }
+                }
+            },
+            "location": "westeurope",
+            "properties": {
+                "blueprintId": "[variables('blueprintId')]",
+                "resourceGroups": {
+                },
+                "locks": {
+                    "mode": "none"
+                },
+                "parameters": {
+                    "network_codeBU": {
+                        "value": "NEWBU"
+                    },
+                    "network_customerSubnetPrefix": {
+                        "value": "192.168.20.0/24"
+                    },
+                    "network_appgatewaySubnetPrefix": {
+                        "value": "192.168.21.0/24"
+                    },
+                    "network_resourcesLocation": {
+                        "value": "westeurope"
+                    },
+                    "network_createdBy": {
+                        "value": "[parameters('createdBy')]"
+                    },
+                    "network_projectName": {
+                        "value": "My New Project"
+                    },
+                    "keyVault_codeBU": {
+                        "value": "NEWBU"
+                    },
+                    "keyVault_resourcesLocation": {
+                        "value": "westeurope"
+                    },
+                    "keyVault_createdBy": {
+                        "value": "[parameters('createdBy')]"
+                    },
+                    "keyVault_projectName": {
+                        "value": "My New Project"
+                    },
+                    "keyVault_objectId": {
+                        "value": "47d549e3-95d9-4b13-bf00-af2553fe143d"
+                    },
+                    "logAnalytics_codeBU": {
+                        "value": "NEWBU"
+                    },
+                    "logAnalytics_data-retention": {
+                        "value": 365
+                    },
+                    "logAnalytics_location": {
+                        "value": "westeurope"
+                    }
+                }
+            }
+        }
+    ]
+}

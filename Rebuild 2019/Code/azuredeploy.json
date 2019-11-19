@@ -1,0 +1,113 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appServicePlanName": {
+            "type": "string",
+            "metadata": {
+              "description": "App Service Plan Name."
+            }
+          },
+          "webAppName": {
+            "type": "string",
+            "metadata": {
+              "description": "Web App Name."
+            }
+          },
+          "sqlServerName": {
+            "type": "string",
+            "metadata": {
+              "description": "SQL Server Name."
+            }
+          },
+          "sqlServerAdmin": {
+            "type": "string",
+            "metadata": {
+              "description": "SQL Server Admin Name."
+            }
+          },
+          "sqlServerPassword": {
+            "type": "string",
+            "metadata": {
+              "description": "SQL Server Password."
+            }
+          },
+          "sqlDatabaseName": {
+            "type": "string",
+            "defaultValue": "sqldb001",
+            "metadata": {
+              "description": "SQL Database Name."
+            }
+          }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "name": "[parameters('appServicePlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-11-01",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "F1",
+                "capacity": 1
+            },
+            "tags": {
+                "CreatedBy": "Pipo le Stagiaire"
+            },
+            "properties": {
+                "name": "[parameters('appServicePlanName')]"
+            }
+        },
+        {
+            "name": "[parameters('webAppName')]",
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2016-08-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('webAppName'))]": "Resource",
+                "CreatedBy": "Pipo le Stagiaire"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+            ],
+            "properties": {
+                "name": "[parameters('webAppName')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+            }
+        },
+        {
+            "name": "[parameters('sqlServerName')]",
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[parameters('sqlServerName')]"
+            },
+            "properties": {
+                "administratorLogin": "[parameters('sqlServerAdmin')]",
+                "administratorLoginPassword": "[parameters('sqlServerPassword')]"
+            },
+            "resources": [
+                {
+                    "name": "[parameters('sqlDatabaseName')]",
+                    "type": "databases",
+                    "apiVersion": "2014-04-01",
+                    "location": "[resourceGroup().location]",
+                    "tags": {
+                        "displayName": "[parameters('sqlDatabaseName')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+                    ],
+                    "properties": {
+                        "collation": "SQL_Latin1_General_CP1_CI_AS",
+                        "edition": "Basic",
+                        "maxSizeBytes": "1073741824",
+                        "requestedServiceObjectiveName": "Basic"
+                    }
+                }
+            ]
+        }
+    ],
+    "outputs": {}
+}
