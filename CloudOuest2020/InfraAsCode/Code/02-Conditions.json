@@ -1,0 +1,110 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "rgName": {
+            "type": "string",
+            "maxLength": 16,
+            "metadata": {
+                "description": "Resource Group Name"
+            }
+        },
+        "rgLocation": {
+            "type": "string",
+            "allowedValues": [
+                "West Europe",
+                "North Europe"
+            ],
+            "metadata": {
+                "description": "Location RG"
+            }
+        },
+        "deploymentIdName": {
+            "type": "string"
+        },
+        "ipType": {
+            "type": "string",
+            "allowedValues": [
+                "Dynamic",
+                "Static"
+            ],
+            "metadata": {
+                "description": "IP Type."
+            }
+        },
+        "createdby": {
+           "type": "string",
+           "metadata": {
+                "description": "Who deployed the resource."
+            }
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2019-10-01",
+            "name": "[parameters('rgName')]",
+            "location": "[parameters('rgLocation')]",
+            "properties": {
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "[parameters('deploymentIdName')]",
+            "resourceGroup": "[parameters('rgName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups/', parameters('rgName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                    },
+                    "variables": {
+                    },
+                    "resources": [
+                        {
+                            "condition": "[equals(parameters('ipType'), 'Dynamic')]",
+                            "type": "Microsoft.Network/publicIPAddresses",
+                            "apiVersion": "2019-12-01",
+                            "name": "IPDynamic",
+                            "location": "[parameters('rgLocation')]",
+                            "tags": {
+                                "CreatedBy": "[parameters('createdBy')]",
+                                "Description": "Demo",
+                                "Role": "IP"
+                            },
+                            "properties": {
+                                "publicIPAllocationMethod": "Dynamic"
+                            }
+                        },
+                        {
+                            "condition": "[equals(parameters('ipType'), 'Static')]",
+                            "type": "Microsoft.Network/publicIPAddresses",
+                            "apiVersion": "2019-12-01",
+                            "name": "IPStatic",
+                            "location": "[parameters('rgLocation')]",
+                            "tags": {
+                                "CreatedBy": "[parameters('createdBy')]",
+                                "Description": "Demo",
+                                "Role": "IP"
+                            },
+                            "properties": {
+                                "publicIPAllocationMethod": "Static"
+                            }
+                        }
+                    ],
+                    "outputs": {
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+    }
+}
