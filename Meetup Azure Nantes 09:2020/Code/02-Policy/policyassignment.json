@@ -1,0 +1,104 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyAssignmentName": {
+            "type": "string",
+            "metadata": {
+                "displayName": "Policy assignment name",
+                "description": "Name to use for a specific policy assignment."
+            }
+        },
+        "policyAssignmentDisplayName": {
+            "type": "string",
+            "metadata": {
+                "displayName": "Policy assignment name",
+                "description": "Name to use for a specific policy assignment."
+            }
+        },
+        "policyDefinitionName": {
+            "type": "string",
+            "metadata": {
+                "displayName": "Policy Definition name",
+                "description": "Name of the policy to assign."
+            }
+        },
+        "scopeToExclude": {
+            "type": "array",
+            "metadata": {
+                "description": "Scope Id to exclude"
+            },
+            "defaultValue": []
+        },
+        "policyParameters": {
+            "type": "object",
+            "metadata": {
+                "displayName": "Policy parameters",
+                "description": "Policy parameters as an object parameter type."
+            },
+            "defaultValue": {
+            }
+        },
+        "policyAssignmentDescription": {
+            "type": "string",
+            "metadata": {
+                "displayName": "Policy assignment name",
+                "description": "Name to use for a specific policy assignment."
+            }
+        },
+        "policyAssignmentMode": {
+            "type": "string",
+            "metadata": {
+                "displayName": "Policy assignment mode",
+                "description": "Enforced (default) or disabled."
+            },
+            "allowedValues": [
+                "Default",
+                "DoNotEnforce"
+            ],
+            "defaultValue": "Default"
+        },
+        "policyAssignmentIdentityLocation": {
+            "type": "string",
+            "metadata": {
+                "displayName": "The location of the policy assignment.",
+                "description": " Only required when utilizing managed identity."
+            },
+            "defaultValue": ""
+        },
+        "policyAssignmentIdentityType": {
+            "type": "string",
+            "metadata": {
+                "displayName": "The identity type.",
+                "description": "The managed identity associated with the policy assignment - SystemAssigned or None."
+            },
+            "allowedValues": [
+                "SystemAssigned",
+                "None"
+            ],
+            "defaultValue": "None"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/policyAssignments",
+            "name": "[parameters('policyAssignmentName')]",
+            "apiVersion": "2019-06-01",
+            "properties": {
+                "displayName": "[parameters('policyAssignmentDisplayName')]",
+                "policyDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/policyDefinitions', parameters('policyDefinitionName'))]",
+                "scope": "[subscription().id]",
+                "notScopes": "[parameters('scopeToExclude')]",
+                "parameters": "[parameters('policyParameters')]",
+                "description": "[parameters('policyAssignmentDescription')]",
+                "metadata": { "assignedBy": "Governance Team" },
+                "enforcementMode": "[parameters('policyAssignmentMode')]"
+            },
+            "location": "[parameters('policyAssignmentIdentityLocation')]",
+            "identity": {
+                "type": "[parameters('policyAssignmentIdentityType')]"
+            }
+        }
+    ]
+}

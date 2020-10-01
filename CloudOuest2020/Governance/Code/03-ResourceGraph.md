@@ -80,7 +80,7 @@ Resources
 # Tags
 ## List resources with a specific tag value
 Resources
-| where tags.ApplicationSponsor=~'rodolphe.beck@sodexo.com'
+| where tags.ApplicationSponsor=~'myuser@mydomain.com'
 | project name
 
 ## List all resource groups where a specific tag is missing

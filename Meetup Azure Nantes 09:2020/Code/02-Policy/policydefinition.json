@@ -1,0 +1,55 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "functions": [],
+    "variables": {
+        "policyName": "Audit allowed environment tag value for resource groups",
+        "policyDisplayName": "Audit allowed environment tag value for resource groups",
+        "policyDescription": "This policy enables you to audit the value for the environment tag inside your organization."
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/policyDefinitions",
+            "name": "[variables('policyName')]",
+            "apiVersion": "2019-09-01",
+            "properties": {
+                "displayName": "[variables('policyDisplayName')]",
+                "policyType": "Custom",
+                "description": "[variables('policyDescription')]",
+                "metadata": {
+                    "category": "General"
+                },
+                "mode": "All",
+                "parameters": {
+                    "Environment": {
+                        "type": "Array",
+                        "metadata": {
+                            "displayName": "Allowed Environment Tags Value",
+                            "description": "The list of environment that can be specified when deploying resource groups."
+                        }
+                    }
+                },
+                "policyRule": {
+                    "if": {
+                        "allOf": [
+                            {
+                                "field": "type",
+                                "equals": "Microsoft.Resources/subscriptions/resourceGroups"
+                            },
+                            {
+                                "field": "tags['Environment']",
+                                "notIn": "[[parameters('Environment')]"
+                            }
+                        ]
+                    },
+                    "then": {
+                        "effect": "deny"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyAssignmentName": {
+            "value": "EnvironmentTag_Audit"
+        },
+        "policyAssignmentDisplayName": {
+            "value": "EnvironmentTag_Audit"
+        },
+        "policyDefinitionName": {
+            "value": "Audit allowed environment tag value for resource groups"
+        },
+        "scopeToExclude": {
+            "value": []
+        },
+        "policyParameters": {
+            "value": {
+                "Environment": {
+                    "value": [
+                        "PRD",
+                        "DEV",
+                        "INT"
+                    ]
+                }
+            }
+        },
+        "policyAssignmentDescription": {
+            "value": "Audit allowed environment tag value for resource groups"
+        },
+        "policyAssignmentMode": {
+            "value": "Default"
+        },
+        "policyAssignmentIdentityLocation": {
+            "value": ""
+        },
+        "policyAssignmentIdentityType": {
+            "value": "None"
+        }
+    }
+}
