@@ -1,0 +1,121 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice\\AOSNice.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice.Shared\\AOSNice.Shared.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice.Shared\\AOSNice.Shared.csproj",
+        "projectName": "AOSNice.Shared",
+        "projectPath": "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice.Shared\\AOSNice.Shared.csproj",
+        "packagesPath": "C:\\Users\\Yannick\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice.Shared\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Yannick\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "http://rits-tfs-01.rits.local:8080/tfs/DefaultCollection/_packaging/RefreshCommon/nuget/v3/index.json": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice\\AOSNice.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice\\AOSNice.csproj",
+        "projectName": "AOSNice",
+        "projectPath": "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice\\AOSNice.csproj",
+        "packagesPath": "C:\\Users\\Yannick\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Yannick\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "http://rits-tfs-01.rits.local:8080/tfs/DefaultCollection/_packaging/RefreshCommon/nuget/v3/index.json": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {
+              "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice.Shared\\AOSNice.Shared.csproj": {
+                "projectPath": "C:\\Users\\Yannick\\Documents\\Visual Studio 2019\\AOS Nice\\AOSNice.Shared\\AOSNice.Shared.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

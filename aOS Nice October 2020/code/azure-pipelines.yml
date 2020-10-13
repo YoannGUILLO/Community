@@ -1,0 +1,168 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  BuildConfiguration: 'Release'
+  SolutionPath: 'AOSNice/AOSNice.sln'
+
+stages:
+  - stage: InfraAsCode
+    jobs:
+      - job: InfraAsCode
+        pool:
+          vmimage: windows-latest
+        steps:
+        - task: AzurePowerShell@5
+          inputs:
+            azureSubscription: 'DEV(442da072-131e-4b80-b142-d51ce4e1c87d)'
+            ScriptType: 'InlineScript'
+            Inline: 'New-AzResourceGroup -name "AMSNICE-YML" -Location "westeurope" -Force'
+            azurePowerShellVersion: 'LatestVersion'
+          
+        - task: AzureResourceManagerTemplateDeployment@3
+          displayName: Validate deployment
+          inputs:
+            deploymentScope: 'Resource Group'
+            azureResourceManagerConnection: 'DEV(442da072-131e-4b80-b142-d51ce4e1c87d)'
+            subscriptionId: '442da072-131e-4b80-b142-d51ce4e1c87d'
+            action: 'Create Or Update Resource Group'
+            resourceGroupName: 'AMSNICE-YML'
+            location: 'West Europe'
+            templateLocation: 'Linked artifact'
+            csmFile: '$(Build.SourcesDirectory)\InfraAsCode\deploy.json'
+            deploymentMode: 'Validation'
+        
+        - task: AzureResourceManagerTemplateDeployment@3
+          displayName: Run deployment
+          inputs:
+            deploymentScope: 'Resource Group'
+            azureResourceManagerConnection: 'DEV(442da072-131e-4b80-b142-d51ce4e1c87d)'
+            subscriptionId: '442da072-131e-4b80-b142-d51ce4e1c87d'
+            action: 'Create Or Update Resource Group'
+            resourceGroupName: 'AMSNICE-YML'
+            location: 'West Europe'
+            templateLocation: 'Linked artifact'
+            csmFile: '$(Build.SourcesDirectory)\InfraAsCode\deploy.json'
+            deploymentMode: 'Incremental'
+
+  - stage: Build
+    jobs:
+    - job: Build
+      steps:
+      - task: DotNetCoreCLI@2
+        displayName: 'Build web project'
+        inputs:
+          command: 'build'
+          projects: $(SolutionPath)
+
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'test'
+          projects: '**/*.Tests.csproj'
+          arguments: -c $(BuildConfiguration) --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
+          testRunTitle: 'Run Test and collect Coverage' 
+        displayName: 'Running tests'
+
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: custom
+          custom: tool
+          arguments: install --tool-path . dotnet-reportgenerator-globaltool
+        displayName: Install tests ReportGenerator tool
+
+      - script: reportgenerator -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/coverlet/reports -reporttypes:"Cobertura"
+        displayName: Create tests reports
+
+      - task: PublishCodeCoverageResults@1
+        displayName: 'Publish code coverage'
+        inputs:
+          codeCoverageTool: Cobertura
+          summaryFileLocation: $(Build.SourcesDirectory)/coverlet/reports/Cobertura.xml  
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Publish and zip'
+        inputs:
+          command: publish
+          publishWebProjects: False
+          projects: $(SolutionPath)
+          arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+          zipAfterPublish: True
+
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Build artifacts'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'AOSNice'
+          publishLocation: 'Container'
+
+  - stage: Dev
+    jobs:
+    - deployment: DeployDev
+      displayName: deploy Web App on dev slot
+      pool:
+        vmImage: 'vs2017-win2016'
+      # records deployment against bookings resource - Kubernetes namespace
+      environment: 'dev'
+      strategy: 
+        runOnce:
+          deploy:
+            steps:
+            - task: AzureRmWebAppDeployment@4
+              inputs:
+                ConnectionType: 'AzureRM'
+                azureSubscription: 'DEV(442da072-131e-4b80-b142-d51ce4e1c87d)'
+                appType: 'webApp'
+                WebAppName: 'AOSPortal'
+                deployToSlotOrASE: true
+                ResourceGroupName: 'AOSNICE-YML'
+                SlotName: 'dev'
+                packageForLinux: '$(Pipeline.Workspace)/AOSNice/AOSNice.zip'
+
+  - stage: Staging
+    jobs:
+    - deployment: DeployStaging
+      displayName: deploy Web App on staging slot
+      pool:
+        vmImage: 'vs2017-win2016'
+      # records deployment against bookings resource - Kubernetes namespace
+      environment: 'staging'
+      strategy: 
+        runOnce:
+          deploy:
+            steps:
+            - task: AzureRmWebAppDeployment@4
+              inputs:
+                ConnectionType: 'AzureRM'
+                azureSubscription: 'DEV(442da072-131e-4b80-b142-d51ce4e1c87d)'
+                appType: 'webApp'
+                WebAppName: 'AOSPortal'
+                deployToSlotOrASE: true
+                ResourceGroupName: 'AOSNICE-YML'
+                SlotName: 'staging'
+                packageForLinux: '$(Pipeline.Workspace)/AOSNice/AOSNice.zip'
+
+  - stage: Prod
+    jobs:
+    - deployment: DeployProd
+      displayName: deploy Web App on prod slot
+      pool:
+        vmImage: 'vs2017-win2016'
+      # records deployment against bookings resource - Kubernetes namespace
+      environment: 'prod'
+      strategy: 
+        runOnce:
+          deploy:
+            steps:
+            - task: AzureRmWebAppDeployment@4
+              inputs:
+                ConnectionType: 'AzureRM'
+                azureSubscription: 'DEV(442da072-131e-4b80-b142-d51ce4e1c87d)'
+                appType: 'webApp'
+                WebAppName: 'AOSPortal'
+                deployToSlotOrASE: true
+                ResourceGroupName: 'AOSNICE-YML'
+                SlotName: 'prod'
+                packageForLinux: '$(Pipeline.Workspace)/AOSNice/AOSNice.zip'
